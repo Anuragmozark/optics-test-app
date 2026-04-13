@@ -1,11 +1,5 @@
 import React from 'react';
-import {
-  TouchableOpacity,
-  Text,
-  StyleSheet,
-  Platform,
-  View,
-} from 'react-native';
+import { TouchableOpacity, Text, StyleSheet, Platform, View } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 
@@ -15,59 +9,48 @@ interface BackButtonProps {
   onPress?: () => void;
 }
 
-const BackButton = ({
-  label = 'Back',
-  color = '#111',
-  onPress,
-}: BackButtonProps) => {
+const BackButton = ({ label = 'Back', color = '#111', onPress }: BackButtonProps) => {
   const navigation = useNavigation();
 
   const handlePress = () => {
     if (onPress) {
       onPress();
-    } else {
+    } else if (navigation.canGoBack()) {
       navigation.goBack();
     }
   };
 
   return (
-    <View style={styles.wrapper}>
-      <TouchableOpacity
-        style={styles.container}
-        onPress={handlePress}
-        activeOpacity={0.7}
-        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
-      >
-        <Ionicons
-          name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
-          size={24}
-          color={color}
-        />
-
-        {/* Show text mostly on iOS */}
-        {Platform.OS === 'ios' && (
-          <Text style={[styles.text, { color }]}>{label}</Text>
-        )}
-      </TouchableOpacity>
-    </View>
+    <TouchableOpacity
+      style={styles.container}
+      onPress={handlePress}
+      activeOpacity={0.6}
+      hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+    >
+      <Ionicons
+        name={Platform.OS === 'ios' ? 'chevron-back' : 'arrow-back'}
+        size={26}
+        color={color}
+      />
+      {Platform.OS === 'ios' && (
+        <Text style={[styles.label, { color }]}>{label}</Text>
+      )}
+    </TouchableOpacity>
   );
 };
 
 const styles = StyleSheet.create({
-  wrapper: {
-    
-    zIndex: 100, 
-  },
   container: {
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 8, // Add padding here to make the hit-area larger
+    paddingVertical: 6,
     paddingHorizontal: 4,
   },
-  text: {
+  label: {
     fontSize: 17,
     fontWeight: '500',
-    marginLeft: Platform.OS === 'ios' ? -2 : 4,
+    marginLeft: 2,
   },
 });
+
 export default BackButton;

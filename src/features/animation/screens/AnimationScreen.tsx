@@ -5,16 +5,82 @@ import {
   StyleSheet,
   TouchableOpacity,
   Dimensions,
-  SafeAreaView,
   Animated,
   Easing,
 } from 'react-native';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import LinearGradient from 'react-native-linear-gradient';
 import { RootStackParamList } from '../../../navigation/types';
-import BackButton from '../../../components/common/BackButton';
 
-const { width, height } = Dimensions.get('window');
+const { width } = Dimensions.get('window');
+
+// ─── Extracted loader components (own hooks — no Rules of Hooks violation) ────
+
+const ProgressRingLoader = () => {
+  const progressAnim = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(progressAnim, {
+        toValue: 1,
+        duration: 3000,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [progressAnim]);
+  return (
+    <View style={styles.loaderContainer}>
+      <View style={styles.progressRing}>
+        <Animated.View
+          style={[
+            styles.progressFill,
+            {
+              transform: [
+                {
+                  rotate: progressAnim.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: ['0deg', '360deg'],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
+        <View style={styles.progressCenter} />
+      </View>
+      <Text style={styles.loaderText}>Progress: 75%</Text>
+    </View>
+  );
+};
+
+const ShimmerLoader = () => {
+  const shimmerAnim = useRef(new Animated.Value(-width)).current;
+  useEffect(() => {
+    Animated.loop(
+      Animated.timing(shimmerAnim, {
+        toValue: width,
+        duration: 1500,
+        easing: Easing.linear,
+        useNativeDriver: true,
+      }),
+    ).start();
+  }, [shimmerAnim]);
+  return (
+    <View style={styles.loaderContainer}>
+      <View style={styles.shimmerCard}>
+        <Animated.View
+          style={[styles.shimmerEffect, { transform: [{ translateX: shimmerAnim }] }]}
+        />
+        <View style={styles.shimmerContent}>
+          <View style={styles.shimmerLine} />
+          <View style={[styles.shimmerLine, { width: '60%' }]} />
+          <View style={[styles.shimmerLine, { width: '40%' }]} />
+        </View>
+      </View>
+      <Text style={styles.loaderText}>Loading content...</Text>
+    </View>
+  );
+};
 
 const AnimationScreen = () => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
@@ -235,80 +301,6 @@ const AnimationScreen = () => {
     </View>
   );
 
-  const ProgressRingLoader = () => {
-    const progressAnim = useRef(new Animated.Value(0)).current;
-
-    useEffect(() => {
-      Animated.loop(
-        Animated.timing(progressAnim, {
-          toValue: 1,
-          duration: 3000,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      ).start();
-    }, []);
-
-    return (
-      <View style={styles.loaderContainer}>
-        <View style={styles.progressRing}>
-          <Animated.View
-            style={[
-              styles.progressFill,
-              {
-                transform: [
-                  {
-                    rotate: progressAnim.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: ['0deg', '360deg'],
-                    }),
-                  },
-                ],
-              },
-            ]}
-          />
-          <View style={styles.progressCenter} />
-        </View>
-        <Text style={styles.loaderText}>Progress: 75%</Text>
-      </View>
-    );
-  };
-
-  const ShimmerLoader = () => {
-    const shimmerAnim = useRef(new Animated.Value(-width)).current;
-
-    useEffect(() => {
-      Animated.loop(
-        Animated.timing(shimmerAnim, {
-          toValue: width,
-          duration: 1500,
-          easing: Easing.linear,
-          useNativeDriver: true,
-        })
-      ).start();
-    }, []);
-
-    return (
-      <View style={styles.loaderContainer}>
-        <View style={styles.shimmerCard}>
-          <Animated.View
-            style={[
-              styles.shimmerEffect,
-              {
-                transform: [{ translateX: shimmerAnim }],
-              },
-            ]}
-          />
-          <View style={styles.shimmerContent}>
-            <View style={styles.shimmerLine} />
-            <View style={[styles.shimmerLine, { width: '60%' }]} />
-            <View style={[styles.shimmerLine, { width: '40%' }]} />
-          </View>
-        </View>
-        <Text style={styles.loaderText}>Loading content...</Text>
-      </View>
-    );
-  };
 
   const animations = [
     {
@@ -344,18 +336,8 @@ const AnimationScreen = () => {
   ];
 
   return (
-    <SafeAreaView style={styles.container}>
-      <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        style={styles.gradientBackground}
-      >
-         <BackButton/>
-        <View style={styles.header}>
-         
-          <Text style={styles.title}>Animation Gallery</Text>
-          <Text style={styles.subtitle}>InstaBIZ-Style Loaders</Text>
-        </View>
-
+    <View style={styles.container}>
+      <LinearGradient colors={['#667eea', '#764ba2']} style={styles.gradientBackground}>
         <View style={styles.animationContainer}>
           {animations[currentAnimation].component}
         </View>
@@ -408,40 +390,41 @@ const AnimationScreen = () => {
           ))}
         </View>
       </LinearGradient>
-    </SafeAreaView>
+    </View>
   );
+
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#667eea',
   },
   gradientBackground: {
     flex: 1,
   },
-  header: {
+  pageHeader: {
+    flexDirection: 'row',
     alignItems: 'center',
-    paddingTop: 20,
-    paddingHorizontal: 20,
+    paddingHorizontal: 12,
+    paddingBottom: 8,
   },
-  backButton: {
-    alignSelf: 'flex-start',
-    marginBottom: 10,
+  backSlot: {
+    width: 70,
   },
-  backButtonText: {
+  titleSlot: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  pageTitle: {
     fontSize: 18,
+    fontWeight: '700',
     color: 'white',
-    fontWeight: '600',
   },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: 'white',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: 'rgba(255,255,255,0.8)',
+  pageSubtitle: {
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.75)',
+    marginTop: 2,
   },
   animationContainer: {
     flex: 1,

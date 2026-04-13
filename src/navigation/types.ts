@@ -2,6 +2,12 @@ import type { RouteProp } from '@react-navigation/native';
 import type { OcrImage } from '../features/ocr/types';
 
 export type RootStackParamList = {
+  // ── Auth ──
+  AuthStack: undefined;
+  SignIn: undefined;
+  SignUp: undefined;
+
+  // ── App ──
   HomeStack: undefined;
   MainTabs: undefined;
   Home: undefined;

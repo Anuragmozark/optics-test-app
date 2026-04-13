@@ -1,49 +1,34 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  SafeAreaView,
-  Alert,
-  TouchableOpacity,
-} from 'react-native';
+import React, { memo } from 'react';
+import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
 import { RootStackParamList } from '../../../navigation/types';
 import OcrImageCard from '../components/OcrImageCard';
 import { images, textBlocks } from '../data';
 import type { OcrImage } from '../types';
-import BackButton from '../../../components/common/BackButton';
+import { Colors, Spacing, Radius, FontSize, FontWeight, Shadows } from '../../../theme';
 
-const OcrScreen = () => {
+const OcrScreen = memo(() => {
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();
 
   const handleImagePress = (image: OcrImage) => {
     if (image.clickable) {
       navigation.navigate('TextDetail', { image });
     } else {
-      Alert.alert('Info', 'This image contains text but is not clickable in this demo.');
+      Alert.alert('Info', 'This image is not interactive in this demo.');
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
-       <BackButton/>
-      <View style={styles.screenHeader}>
-      
-        <View style={styles.headerTextGroup}>
-          <Text style={styles.title}>Text Identification</Text>
-          <Text style={styles.subtitle}>Advanced OCR Testing Environment</Text>
-        </View>
-      </View>
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Text Recognition Samples</Text>
-          {textBlocks.map((block) => (
-            <View key={block.id} style={styles.textBlock}>
-              <Text style={styles.textBlockTitle}>{block.title}</Text>
-              <Text style={[styles.textContent, block.orientation === 'vertical' && styles.verticalText]}>
+          {textBlocks.map(block => (
+            <View key={block.id} style={styles.card}>
+              <Text style={styles.cardTitle}>{block.title}</Text>
+              <Text style={[styles.cardBody, block.orientation === 'vertical' && styles.vertical]}>
                 {block.content}
               </Text>
             </View>
@@ -53,136 +38,51 @@ const OcrScreen = () => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Document Images</Text>
           <Text style={styles.sectionSubtitle}>Tap the invoice image to see detailed text extraction</Text>
-          <View style={styles.imagesGrid}>
-            {images.map((image) => (
+          <View style={styles.grid}>
+            {images.map(image => (
               <OcrImageCard key={image.id} image={image} onPress={handleImagePress} />
             ))}
           </View>
         </View>
 
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Advanced Text Recognition</Text>
-          <View style={styles.advancedTextContainer}>
-            <Text style={[styles.advancedText, styles.boldText]}>Bold Text Recognition</Text>
-            <Text style={[styles.advancedText, styles.italicText]}>Italic Text Recognition</Text>
-            <Text style={[styles.advancedText, styles.underlineText]}>Underlined Text Recognition</Text>
-            <Text style={[styles.advancedText, styles.strikethroughText]}>Strikethrough Text Recognition</Text>
+          <Text style={styles.sectionTitle}>Advanced Recognition</Text>
+          <View style={styles.card}>
+            {[
+              { label: 'Bold Text Recognition',          style: { fontWeight: FontWeight.bold } },
+              { label: 'Italic Text Recognition',        style: { fontStyle: 'italic' as const } },
+              { label: 'Underlined Text Recognition',    style: { textDecorationLine: 'underline' as const } },
+              { label: 'Strikethrough Text Recognition', style: { textDecorationLine: 'line-through' as const } },
+            ].map(item => (
+              <Text key={item.label} style={[styles.cardBody, item.style, { marginBottom: Spacing.md }]}>
+                {item.label}
+              </Text>
+            ))}
           </View>
         </View>
+
       </ScrollView>
     </SafeAreaView>
   );
-};
+});
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8f9fa',
+  container: { flex: 1, backgroundColor: Colors.background },
+  scroll:    { paddingHorizontal: Spacing.lg, paddingTop: Spacing.base, paddingBottom: Spacing['2xl'] },
+  section:   { marginBottom: Spacing['2xl'] + 2 },
+  sectionTitle:    { fontSize: FontSize['4xl'], fontWeight: FontWeight.bold, color: Colors.textPrimary, marginBottom: Spacing.md },
+  sectionSubtitle: { fontSize: FontSize.base, color: Colors.textSecondary, marginBottom: Spacing.md, lineHeight: 20 },
+  card: {
+    backgroundColor: Colors.backgroundCard,
+    borderRadius: Radius.lg,
+    padding: Spacing.base,
+    marginBottom: Spacing.md,
+    ...Shadows.md,
   },
-  scrollContainer: {
-    paddingTop: 110,
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-  },
-  screenHeader: {
-    width: '100%',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingTop: 18,
-    paddingBottom: 14,
-    paddingHorizontal: 20,
-    backgroundColor: 'transparent',
-  },
-  headerTextGroup: {
-    alignItems: 'center',
-  },
-  header: {
-    alignItems: 'flex-start',
-    marginBottom: 30,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#2d3748',
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#718096',
-  },
-  section: {
-    marginBottom: 30,
-  },
-  sectionTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#2d3748',
-    marginBottom: 15,
-  },
-  sectionSubtitle: {
-    fontSize: 14,
-    color: '#718096',
-    marginBottom: 15,
-    lineHeight: 20,
-  },
-  textBlock: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  textBlockTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#4a5568',
-    marginBottom: 10,
-  },
-  textContent: {
-    fontSize: 16,
-    color: '#2d3748',
-    lineHeight: 24,
-  },
-  verticalText: {
-    writingDirection: 'ltr',
-    textAlign: 'left',
-  },
-  imagesGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
-  },
-  advancedTextContainer: {
-    backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  advancedText: {
-    fontSize: 16,
-    marginBottom: 12,
-    color: '#2d3748',
-  },
-  boldText: {
-    fontWeight: 'bold',
-  },
-  italicText: {
-    fontStyle: 'italic',
-  },
-  underlineText: {
-    textDecorationLine: 'underline',
-  },
-  strikethroughText: {
-    textDecorationLine: 'line-through',
-  },
+  cardTitle: { fontSize: FontSize['2xl'], fontWeight: FontWeight.semibold, color: Colors.textSecondary, marginBottom: Spacing.sm + 2 },
+  cardBody:  { fontSize: FontSize.lg, color: Colors.textPrimary, lineHeight: 24 },
+  vertical:  { writingDirection: 'ltr', textAlign: 'left' },
+  grid:      { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between' },
 });
 
 export default OcrScreen;

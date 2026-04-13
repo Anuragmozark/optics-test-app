@@ -2,30 +2,28 @@ import React from 'react';
 import { StatusBar, StyleSheet, useColorScheme } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-
-// Navigation entry point
+import { Provider } from 'react-redux';
+import { store } from './src/store';
 import RootNavigator from './src/navigation/RootNavigator';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   return (
-    /* 1. GestureHandlerRootView: Must be at the very top for animations and touch logic */
-    <GestureHandlerRootView style={styles.container}>
-      
-   
-      <SafeAreaProvider>
-        
-     
-        <StatusBar 
-          barStyle={isDarkMode ? 'light-content' : 'dark-content'} 
-          backgroundColor="transparent" 
-          translucent 
-        />
-        <RootNavigator />
-        
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    /* 1. Redux store at the very top */
+    <Provider store={store}>
+      {/* 2. GestureHandlerRootView: required for animations and touch logic */}
+      <GestureHandlerRootView style={styles.container}>
+        <SafeAreaProvider>
+          <StatusBar
+            barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            backgroundColor="transparent"
+            translucent
+          />
+          <RootNavigator />
+        </SafeAreaProvider>
+      </GestureHandlerRootView>
+    </Provider>
   );
 }
 
